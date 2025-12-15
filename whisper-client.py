@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import socket
-import time
 
 SOCK_PATH = "/tmp/whisper.sock"
 
@@ -14,15 +13,30 @@ def send(cmd):
     return data.decode()
 
 def main():
-    print("start recording")
-    send("start")
+    while True:
+        print()
+        print("1: start recording")
+        print("2: stop (commit)")
+        print("3: abort (cancel)")
+        print("q: quit")
 
-    input("Press ENTER to stop recording")
+        choice = input("> ").strip()
 
-    print("stop recording")
-    text = send("stop")
+        if choice == "1":
+            print(send("start"))
 
-    print("➡ result:", text)
+        elif choice == "2":
+            print("➡", send("stop"))
+
+        elif choice == "3":
+            print(send("abort"))
+
+        elif choice.lower() == "q":
+            print("bye")
+            break
+
+        else:
+            print("unknown choice")
 
 if __name__ == "__main__":
     main()

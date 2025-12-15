@@ -18,9 +18,16 @@ def audio_callback(indata, frames, time, status):
     if recording:
         audio_chunks.append(indata.copy())
 
+def _stop_stream():
+    global stream, recording
+    recording = False
+    if stream is not None:
+        stream.stop()
+        stream.close()
+        stream = None
+
 def start_recording():
     global stream, recording, audio_chunks
-
     audio_chunks = []
     recording = True
 
@@ -32,18 +39,16 @@ def start_recording():
     )
     stream.start()
 
-def stop_recording():
-    global stream, recording
+def stop_and_collect():
+    _stop_stream()
+    if not audio_chunks:
+        return None
+    return np.concatenate(audio_chunks, axis=0)[:, 0]
 
-    recording = False
-
-    if stream is not None:
-        stream.stop()
-        stream.close()
-        stream = None
-
-    audio = np.concatenate(audio_chunks, axis=0)[:, 0]
-    return audio
+def abort_recording():
+    global audio_chunks
+    _stop_stream()
+    audio_chunks = []  # 完全破棄
 
 def main():
     if os.path.exists(SOCK_PATH):
@@ -68,22 +73,22 @@ def main():
             conn.sendall(b"ok")
 
         elif cmd == "stop":
-            audio = stop_recording()
-
-            if len(audio) == 0:
+            audio = stop_and_collect()
+            if audio is None:
                 conn.sendall(b"(no audio)")
-                conn.close()
-                continue
+            else:
+                print("🧠 transcribing...")
+                result = model.transcribe(
+                    audio,
+                    language="ja",
+                    fp16=False,
+                    temperature=0.0,
+                )
+                conn.sendall(result["text"].strip().encode())
 
-            print("🧠 transcribing...")
-            result = model.transcribe(
-                audio,
-                language="ja",
-                fp16=False,
-                temperature=0.0,
-            )
-            text = result["text"].strip()
-            conn.sendall(text.encode())
+        elif cmd == "abort":
+            abort_recording()
+            conn.sendall(b"aborted")
 
         else:
             conn.sendall(b"unknown command")
