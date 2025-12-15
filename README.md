@@ -1,62 +1,46 @@
-了解です。
-**「Debian + GNOME + IBus で地雷を踏まない最小・正規手順」**を
-**実行順そのまま**でまとめます。
-（理由説明は最小限、手順は安全側のみ）
+# IBus Sample Engine
 
----
+A minimal IBus input method engine implementation for learning and experimentation purposes.
 
-# 前提（守ること）
+## About
 
-* **ユーザー領域は使わない**
-* **IBus を手動起動・再起動しない**
-* **環境変数 `IBUS_COMPONENT_PATH` は使わない**
-* 反映は **再ログイン**で行う
+This project provides a simple IBus engine that demonstrates the basic structure and setup process for creating custom input method engines on Linux. The engine currently replaces the Return key with the text "HELLO" as a proof of concept.
 
----
+> **Important**: This project was developed and tested on **Debian Trixie**. Setup procedures and file paths may vary significantly depending on your Linux distribution. The instructions below are specific to Debian-based systems with GNOME desktop environment.
 
-# ゴール
+## Prerequisites
 
-* 自前 IBus エンジンを Debian に安全に登録
-* Mozc を壊さない
-* `ibus list-engine` に出る
+- IBus framework installed (`ibus` package)
+- Python 3 with GObject introspection bindings (`python3-gi` package)
+- GNOME desktop environment (or compatible)
 
----
+## Installation
 
-## ステップ1：エンジン本体をシステムに配置
+Follow these steps to install the sample engine system-wide. **Do not use user-level component directories** as they can cause conflicts with system-managed IBus instances.
+
+### Step 1: Install the Engine Binary
 
 ```bash
 sudo install -m 755 \
   ibus-engine-sample.py \
   /usr/libexec/ibus-engine-sample
-
-# for re-install
-# pkill -f ibus-engine-sample
 ```
 
-確認：
+For reinstallation, you may need to kill any running instances first:
+
+```bash
+pkill -f ibus-engine-sample
+```
+
+Verify installation:
 
 ```bash
 ls -l /usr/libexec/ibus-engine-sample
-tail -f /tmp/ibus-sample.log
 ```
 
----
+### Step 2: Install the Component XML
 
-## ステップ2：component XML を配置
-
-### XML の必須条件
-
-* `<exec>` は **絶対パス**
-* engine 名は **短く一意**
-* 空要素を作らない（GLib 警告回避）
-
-### 例（重要部分だけ）
-
-```xml
-<exec>/usr/libexec/ibus-engine-sample</exec>
-```
-
-### 配置
+The component XML file must specify the absolute path to the engine executable.
 
 ```bash
 sudo install -m 644 \
@@ -64,86 +48,85 @@ sudo install -m 644 \
   /usr/share/ibus/component/sample.xml
 ```
 
----
+### Step 3: Update IBus Cache
 
-## ステップ3：IBus のキャッシュを更新（ここだけ sudo）
+Rebuild the IBus cache to register the new engine:
 
 ```bash
 sudo ibus write-cache
 ```
 
-※ **restart しない**
+**Important**: Do **not** restart IBus manually at this step.
 
----
+### Step 4: Logout and Login
 
-## ステップ4：必ずログアウト → ログイン
+Log out of your session and log back in. This is the proper way to apply IBus changes on GNOME without conflicting with the desktop environment's session management.
 
-これが **正規の反映方法**。
+### Step 5: Verify Registration
 
----
-
-## ステップ5：登録確認（初めて触る）
+Check if the engine is registered:
 
 ```bash
 ibus list-engine | grep sample
 ```
 
-* 出る → 成功
-* 出ない → 次へ
+If the output shows `sample`, the installation was successful.
 
----
-
-## ステップ6：registry に入っているか（確認用）
+You can also verify the cache directly:
 
 ```bash
 ibus read-cache | grep -A5 sample
 ```
 
----
+## Usage
 
-## ステップ7：実際に使ってみる（任意）
+To activate the sample engine:
 
 ```bash
 ibus engine sample
 ```
 
----
+The engine will intercept all keyboard input. Only pressing the Return key will produce output: the text "HELLO". All other keys will be suppressed.
 
-# やってはいけない操作（重要）
+Check the log file for debugging:
 
-| 操作                    | 理由            |
-| --------------------- | ------------- |
-| `ibus restart`        | GNOME 管理と衝突   |
-| `ibus-daemon -drx`    | 手動起動で壊す       |
-| `IBUS_COMPONENT_PATH` | registry が壊れる |
-| user component 常用     | Debian では非推奨  |
+```bash
+tail -f /tmp/ibus-sample.log
+```
 
----
+## Important Restrictions
 
-# トラブル時の唯一の復旧手順
+On Debian with GNOME, avoid the following operations to prevent breaking your IBus setup:
+
+| Operation | Why to Avoid |
+|-----------|-------------|
+| `ibus restart` | Conflicts with GNOME's session management |
+| `ibus-daemon -drx` | Manual daemon startup can break the system configuration |
+| `IBUS_COMPONENT_PATH` environment variable | Corrupts the registry cache |
+| User-level component directory (`~/.local/share/ibus/component`) | Not recommended on Debian |
+
+## Troubleshooting
+
+If IBus becomes unresponsive or broken, reset it with:
 
 ```bash
 im-config -n ibus
 logout
 ```
 
----
+Then log back in.
 
-## これだけ覚えればOK（要点）
+## Key Points Summary
 
-* **/usr/libexec**
-* **/usr/share/ibus/component**
-* **sudo ibus write-cache**
-* **再ログイン**
+- Engine binary location: `/usr/libexec/ibus-engine-sample`
+- Component XML location: `/usr/share/ibus/component/sample.xml`
+- Always run `sudo ibus write-cache` after changes
+- Always logout/login to apply changes properly
 
-これが **Debian で壊れない唯一のルート**です。
+## License
 
----
+MIT
 
-次に進むなら：
+## Author
 
-* `.deb` 化して配布
-* Rust 版 engine に置き換え
-* GNOME 設定 UI に必ず出す方法
-
-どれにしますか？
+Your Name
