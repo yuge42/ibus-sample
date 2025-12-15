@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 
 import socket
+import time
 
 SOCK_PATH = "/tmp/whisper.sock"
 
-def main():
+def send(cmd):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.connect(SOCK_PATH)
-
-    print("sending start")
-    sock.sendall(b"start")
-
+    sock.sendall(cmd.encode())
     data = sock.recv(4096)
-    print("➡ result:", data.decode())
-
     sock.close()
+    return data.decode()
+
+def main():
+    print("start recording")
+    send("start")
+
+    input("Press ENTER to stop recording")
+
+    print("stop recording")
+    text = send("stop")
+
+    print("➡ result:", text)
 
 if __name__ == "__main__":
     main()

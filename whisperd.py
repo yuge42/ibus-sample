@@ -8,19 +8,42 @@ import numpy as np
 
 SOCK_PATH = "/tmp/whisper.sock"
 SAMPLE_RATE = 16000
-RECORD_SECONDS = 5
 MODEL_NAME = "base"
 
-def record_audio():
-    print("🎤 recording...")
-    audio = sd.rec(
-        int(RECORD_SECONDS * SAMPLE_RATE),
+stream = None
+recording = False
+audio_chunks = []
+
+def audio_callback(indata, frames, time, status):
+    if recording:
+        audio_chunks.append(indata.copy())
+
+def start_recording():
+    global stream, recording, audio_chunks
+
+    audio_chunks = []
+    recording = True
+
+    stream = sd.InputStream(
         samplerate=SAMPLE_RATE,
         channels=1,
         dtype="float32",
+        callback=audio_callback,
     )
-    sd.wait()
-    return audio[:, 0]
+    stream.start()
+
+def stop_recording():
+    global stream, recording
+
+    recording = False
+
+    if stream is not None:
+        stream.stop()
+        stream.close()
+        stream = None
+
+    audio = np.concatenate(audio_chunks, axis=0)[:, 0]
+    return audio
 
 def main():
     if os.path.exists(SOCK_PATH):
@@ -33,33 +56,39 @@ def main():
     server.bind(SOCK_PATH)
     server.listen(1)
 
-    print(f"whisper daemon listening on {SOCK_PATH}")
+    print("whisper daemon ready")
 
     while True:
         conn, _ = server.accept()
-        try:
-            cmd = conn.recv(1024).decode().strip()
-            print("command:", cmd)
+        cmd = conn.recv(1024).decode().strip()
+        print("cmd:", cmd)
 
-            if cmd == "start":
-                audio = record_audio()
-                print("🧠 transcribing...")
-                result = model.transcribe(
-                    audio,
-                    language="ja",
-                    fp16=False,
-                    temperature=0.0,
-                )
-                text = result["text"].strip()
-                conn.sendall(text.encode("utf-8"))
+        if cmd == "start":
+            start_recording()
+            conn.sendall(b"ok")
 
-            else:
-                conn.sendall(b"unknown command")
+        elif cmd == "stop":
+            audio = stop_recording()
 
-        except Exception as e:
-            conn.sendall(f"error: {e}".encode())
-        finally:
-            conn.close()
+            if len(audio) == 0:
+                conn.sendall(b"(no audio)")
+                conn.close()
+                continue
+
+            print("🧠 transcribing...")
+            result = model.transcribe(
+                audio,
+                language="ja",
+                fp16=False,
+                temperature=0.0,
+            )
+            text = result["text"].strip()
+            conn.sendall(text.encode())
+
+        else:
+            conn.sendall(b"unknown command")
+
+        conn.close()
 
 if __name__ == "__main__":
     main()
