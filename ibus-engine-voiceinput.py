@@ -24,6 +24,10 @@ TOGGLE_MASK = IBus.ModifierType.CONTROL_MASK
 # polling 間隔
 POLL_INTERVAL_MS = 200
 
+# Server response constants
+RESULT_NONE = "(none)"
+RESULT_ABORTED = "(aborted)"
+
 # ==================================================
 # ログ
 # ==================================================
@@ -173,7 +177,7 @@ class VoiceinputEngine(IBus.Engine):
         server_state = get_server_state()
         
         if not server_state:
-            logging.error("failed to get server state during polling")
+            logging.error("failed to get server state during polling (server may be down or unreachable)")
             return True  # polling 継続
 
         logging.debug(f"poll: server_state={server_state}")
@@ -186,7 +190,7 @@ class VoiceinputEngine(IBus.Engine):
         if server_state == "RESULT_READY":
             result = whisper_cmd("get")
 
-            if result and result not in ("(none)", "(aborted)"):
+            if result and result not in (RESULT_NONE, RESULT_ABORTED):
                 logging.debug(f"commit: {result}")
                 self.commit_text(
                     IBus.Text.new_from_string(result)
