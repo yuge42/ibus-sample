@@ -189,6 +189,9 @@ def get_result():
 
 def get_status():
     with state_lock:
+        if state == "RECORDING" and record_start_time is not None:
+            elapsed = time.time() - record_start_time
+            return f"{state}:{elapsed:.1f}:{MAX_RECORD_SECONDS}"
         return state
 
 # =========================
