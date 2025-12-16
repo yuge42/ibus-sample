@@ -1,0 +1,30 @@
+[Unit]
+Description=IBus Voice Input Daemon (Whisper)
+Documentation=https://github.com/yuge42/ibus-sample
+After=sound.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ibus-voiceinputd
+Restart=on-failure
+RestartSec=5
+
+# Runtime directory for socket
+RuntimeDirectory=ibus-voiceinput
+RuntimeDirectoryMode=0700
+
+# State directory for logs
+StateDirectory=ibus-voiceinput
+StateDirectoryMode=0755
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Resource limits
+# Whisper model loading and inference can be memory intensive
+MemoryMax=4G
+CPUQuota=200%
+
+[Install]
+WantedBy=default.target
