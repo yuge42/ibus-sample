@@ -168,6 +168,7 @@ def _transcribe_and_store():
     with state_lock:
         result_text = result["text"].strip()
         state = "RESULT_READY"
+        record_start_time = None
 
 # =========================
 # 結果取得
