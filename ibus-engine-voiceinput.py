@@ -192,13 +192,17 @@ class VoiceinputEngine(IBus.Engine):
         state_name = state_parts[0]
 
         # サーバーが RECORDING 中なら経過時間を表示
-        if state_name == "RECORDING" and len(state_parts) == 3:
-            try:
-                elapsed = float(state_parts[1])
-                max_time = float(state_parts[2])
-                self.update_preedit(f"🎤 音声入力中… ({int(elapsed)}s/{int(max_time)}s)")
-            except (ValueError, IndexError) as e:
-                logging.error(f"failed to parse recording time: {e}")
+        if state_name == "RECORDING":
+            if len(state_parts) == 3:
+                try:
+                    elapsed = float(state_parts[1])
+                    max_time = float(state_parts[2])
+                    self.update_preedit(f"🎤 音声入力中… ({int(elapsed)}s/{int(max_time)}s)")
+                except ValueError as e:
+                    logging.error(f"failed to parse recording time: {e}")
+                    self.update_preedit("🎤 音声入力中…")
+            else:
+                # Fallback for old status format or malformed data
                 self.update_preedit("🎤 音声入力中…")
 
         # サーバーが RECORDING から TRANSCRIBING に遷移したら preedit を更新
