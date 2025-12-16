@@ -6,7 +6,7 @@ import time
 
 SOCK_PATH = os.path.join(
     os.environ.get("XDG_RUNTIME_DIR", "/tmp"),
-    "ibus-voice-input.sock",
+    "ibus-voiceinput.sock",
 )
 
 def send(cmd):

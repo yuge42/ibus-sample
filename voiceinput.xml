@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component>
-  <name>org.freedesktop.IBus.Sample</name>
+  <name>org.freedesktop.IBus.Voiceinput</name>
 
-  <description>音声入力用 IBus サンプルエンジン</description>
+  <description>音声入力用 IBus エンジン</description>
 
-  <exec>/usr/libexec/ibus-engine-sample</exec>
+  <exec>/usr/libexec/ibus-engine-voiceinput</exec>
   <version>0.1</version>
 
   <author>Asayu Yuge</author>
@@ -12,7 +12,7 @@
 
   <engines>
     <engine>
-      <name>sample</name>
+      <name>voiceinput</name>
       <longname>音声入力（Whisper）</longname>
       <description>Ctrl+Space で音声入力を開始／終了します</description>
       <language>ja</language>

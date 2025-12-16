@@ -10,5 +10,5 @@ uv pip install -r requirements.txt
 # you might want to install dependencies globally when you register the programs to systemd/ibus
 
 source .venv/bin/activate
-python ./ibus-voice-inputd.py
+python ./ibus-voiceinputd.py
 ```

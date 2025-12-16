@@ -15,7 +15,7 @@ import numpy as np
 
 SOCK_PATH = os.path.join(
     os.environ.get("XDG_RUNTIME_DIR", "/tmp"),
-    "ibus-voice-input.sock",
+    "ibus-voiceinput.sock",
 )
 MODEL_NAME = "medium" # base / small / medium / large / large-v2 / v3
 

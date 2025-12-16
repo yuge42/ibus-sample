@@ -1,4 +1,4 @@
-# IBus Sample Engine
+# IBus Voiceinput Engine
 
 A minimal IBus input method engine implementation for learning and experimentation purposes.
 
@@ -16,26 +16,26 @@ This project provides a simple IBus engine that demonstrates the basic structure
 
 ## Installation
 
-Follow these steps to install the sample engine system-wide. **Do not use user-level component directories** as they can cause conflicts with system-managed IBus instances.
+Follow these steps to install the voiceinput engine system-wide. **Do not use user-level component directories** as they can cause conflicts with system-managed IBus instances.
 
 ### Step 1: Install the Engine Binary
 
 ```bash
 sudo install -m 755 \
-  ibus-engine-sample.py \
-  /usr/libexec/ibus-engine-sample
+  ibus-engine-voiceinput.py \
+  /usr/libexec/ibus-engine-voiceinput
 ```
 
 For reinstallation, you may need to kill any running instances first:
 
 ```bash
-pkill -f ibus-engine-sample
+pkill -f ibus-engine-voiceinput
 ```
 
 Verify installation:
 
 ```bash
-ls -l /usr/libexec/ibus-engine-sample
+ls -l /usr/libexec/ibus-engine-voiceinput
 ```
 
 ### Step 2: Install the Component XML
@@ -44,8 +44,8 @@ The component XML file must specify the absolute path to the engine executable.
 
 ```bash
 sudo install -m 644 \
-  sample.xml \
-  /usr/share/ibus/component/sample.xml
+  voiceinput.xml \
+  /usr/share/ibus/component/voiceinput.xml
 ```
 
 ### Step 3: Update IBus Cache
@@ -67,23 +67,23 @@ Log out of your session and log back in. This is the proper way to apply IBus ch
 Check if the engine is registered:
 
 ```bash
-ibus list-engine | grep sample
+ibus list-engine | grep voiceinput
 ```
 
-If the output shows `sample`, the installation was successful.
+If the output shows `voiceinput`, the installation was successful.
 
 You can also verify the cache directly:
 
 ```bash
-ibus read-cache | grep -A5 sample
+ibus read-cache | grep -A5 voiceinput
 ```
 
 ## Usage
 
-To activate the sample engine:
+To activate the voiceinput engine:
 
 ```bash
-ibus engine sample
+ibus engine voiceinput
 ```
 
 The engine will intercept all keyboard input. Only pressing the Return key will produce output: the text "HELLO". All other keys will be suppressed.
@@ -91,7 +91,7 @@ The engine will intercept all keyboard input. Only pressing the Return key will 
 Check the log file for debugging:
 
 ```bash
-tail -f /tmp/ibus-sample.log
+tail -f /tmp/ibus-voiceinput.log
 ```
 
 ## Important Restrictions
@@ -118,8 +118,8 @@ Then log back in.
 
 ## Key Points Summary
 
-- Engine binary location: `/usr/libexec/ibus-engine-sample`
-- Component XML location: `/usr/share/ibus/component/sample.xml`
+- Engine binary location: `/usr/libexec/ibus-engine-voiceinput`
+- Component XML location: `/usr/share/ibus/component/voiceinput.xml`
 - Always run `sudo ibus write-cache` after changes
 - Always logout/login to apply changes properly
 

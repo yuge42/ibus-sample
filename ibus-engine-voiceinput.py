@@ -32,10 +32,10 @@ MAX_RECORD_SECONDS = 30.0
 # ログ
 # ==================================================
 
-logging.basicConfig(
-    filename="/tmp/ibus-sample.log",
-    level=logging.DEBUG,
-    format="%(asctime)s %(message)s",
+LOG_PATH = os.path.join(
+    os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state")),
+    "ibus-voiceinput",
+    "daemon.log"
 )
 
 # ==================================================
@@ -59,7 +59,7 @@ def whisper_cmd(cmd: str):
 # IBus Engine
 # ==================================================
 
-class SampleEngine(IBus.Engine):
+class VoiceinputEngine(IBus.Engine):
     """
     トグル式・timeout 対応・安定版 Whisper IBus Engine
     """
@@ -79,7 +79,7 @@ class SampleEngine(IBus.Engine):
         # 録音開始時刻（server timeout 同期用）
         self.record_start_time = None
 
-        logging.debug("SampleEngine initialized")
+        logging.debug("VoiceinputEngine initialized")
 
     # ------------------------------------------------
     # キーイベント
@@ -237,11 +237,11 @@ def main():
 
     bus = IBus.Bus()
     factory = IBus.Factory.new(bus.get_connection())
-    factory.add_engine("sample", SampleEngine)
+    factory.add_engine("voiceinput", VoiceinputEngine)
 
-    bus.request_name("org.freedesktop.IBus.Sample", 0)
+    bus.request_name("org.freedesktop.IBus.Voiceinput", 0)
 
-    logging.debug("IBus Sample Engine started")
+    logging.debug("IBus Voiceinput Engine started")
     loop.run()
 
 if __name__ == "__main__":
