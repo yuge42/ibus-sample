@@ -194,7 +194,7 @@ def main():
         os.remove(SOCK_PATH)
 
     print("loading whisper model...")
-    model = whisper.load_model(MODEL_NAME)
+    model = whisper.load_model(MODEL_NAME, device="cpu")
 
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(SOCK_PATH)
