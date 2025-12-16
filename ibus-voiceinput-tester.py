@@ -22,6 +22,7 @@ def main():
     print("2: stop (commit)")
     print("3: abort")
     print("4: get result")
+    print("5: get status")
     print("q: quit")
 
     while True:
@@ -42,6 +43,10 @@ def main():
                 print("➡", result)
             else:
                 print("(no result yet)")
+
+        elif choice == "5":
+            status = send("status")
+            print("status:", status)
 
         elif choice.lower() == "q":
             break
