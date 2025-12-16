@@ -4,7 +4,7 @@ A minimal IBus input method engine implementation for learning and experimentati
 
 ## About
 
-This project provides a simple IBus engine that demonstrates the basic structure and setup process for creating custom input method engines on Linux. The engine currently replaces the Return key with the text "HELLO" as a proof of concept.
+This project provides an IBus engine that enables voice input using OpenAI Whisper for speech recognition. It allows you to dictate text directly into any application that supports IBus input methods.
 
 > **Important**: This project was developed and tested on **Debian Trixie**. Setup procedures and file paths may vary significantly depending on your Linux distribution. The instructions below are specific to Debian-based systems with GNOME desktop environment.
 
