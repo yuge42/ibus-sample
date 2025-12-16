@@ -13,7 +13,10 @@ import numpy as np
 # 設定
 # =========================
 
-SOCK_PATH = "/tmp/whisper.sock"
+SOCK_PATH = os.path.join(
+    os.environ.get("XDG_RUNTIME_DIR", "/tmp"),
+    "ibus-voice-input.sock",
+)
 MODEL_NAME = "medium" # base / small / medium / large / large-v2 / v3
 
 SAMPLE_RATE = 16000

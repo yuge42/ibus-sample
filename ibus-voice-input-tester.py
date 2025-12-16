@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+import os
 import socket
 import time
 
-SOCK_PATH = "/tmp/whisper.sock"
+SOCK_PATH = os.path.join(
+    os.environ.get("XDG_RUNTIME_DIR", "/tmp"),
+    "ibus-voice-input.sock",
+)
 
 def send(cmd):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

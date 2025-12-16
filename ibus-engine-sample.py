@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import socket
 import logging
 import time
@@ -12,7 +13,10 @@ from gi.repository import IBus, GLib
 # 設定
 # ==================================================
 
-SOCK_PATH = "/tmp/whisper.sock"
+SOCK_PATH = os.path.join(
+    os.environ.get("XDG_RUNTIME_DIR", "/tmp"),
+    "ibus-voice-input.sock",
+)
 
 # Ctrl + Space でトグル
 TOGGLE_KEY = IBus.KEY_space
