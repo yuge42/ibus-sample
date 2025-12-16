@@ -184,6 +184,14 @@ def get_result():
         return text
 
 # =========================
+# 状態取得
+# =========================
+
+def get_status():
+    with state_lock:
+        return state
+
+# =========================
 # メイン
 # =========================
 
@@ -226,6 +234,10 @@ def main():
                     conn.sendall(b"(none)")
                 else:
                     conn.sendall(text.encode("utf-8"))
+
+            elif cmd == "status":
+                status = get_status()
+                conn.sendall(status.encode("utf-8"))
 
             else:
                 conn.sendall(b"unknown command")
