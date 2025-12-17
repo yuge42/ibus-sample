@@ -79,7 +79,7 @@ def record_timeout_watcher(start_time):
         state = "TRANSCRIBING"
 
     _stop_stream()
-    _transcribe_and_store()
+    threading.Thread(target=_transcribe_and_store, daemon=True).start()
 
 # =========================
 # 録音制御
@@ -123,7 +123,7 @@ def stop_recording():
         state = "TRANSCRIBING"
 
     _stop_stream()
-    _transcribe_and_store()
+    threading.Thread(target=_transcribe_and_store, daemon=True).start()
     return True
 
 def abort_recording():
