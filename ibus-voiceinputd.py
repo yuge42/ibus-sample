@@ -90,6 +90,7 @@ def start_recording():
 
     with state_lock:
         if state != "IDLE":
+            print(f"cannot start recording: state is {state}")
             return False
 
         print("start recording")
@@ -118,6 +119,7 @@ def stop_recording():
 
     with state_lock:
         if state != "RECORDING":
+            print(f"cannot stop recording: state is {state}")
             return False
         print("manual stop")
         state = "TRANSCRIBING"
@@ -131,6 +133,7 @@ def abort_recording():
 
     with state_lock:
         if state != "RECORDING":
+            print(f"cannot abort recording: state is {state}")
             return False
         print("abort")
         state = "IDLE"
@@ -244,6 +247,7 @@ def main():
 
             elif cmd == "status":
                 status = get_status()
+                print(f"status: {status}")
                 conn.sendall(status.encode("utf-8"))
 
             else:
