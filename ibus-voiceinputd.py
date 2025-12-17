@@ -17,7 +17,7 @@ SOCK_PATH = os.path.join(
     os.environ.get("XDG_RUNTIME_DIR", "/tmp"),
     "ibus-voiceinput.sock",
 )
-MODEL_NAME = "medium" # base / small / medium / large / large-v2 / v3
+MODEL_NAME = "base" # base / small / medium / large / large-v2 / v3
 
 SAMPLE_RATE = 16000
 CHANNELS = 1
@@ -90,6 +90,7 @@ def start_recording():
 
     with state_lock:
         if state != "IDLE":
+            print(f"cannot start recording: state is {state}")
             return False
 
         print("start recording")
@@ -118,6 +119,7 @@ def stop_recording():
 
     with state_lock:
         if state != "RECORDING":
+            print(f"cannot stop recording: state is {state}")
             return False
         print("manual stop")
         state = "TRANSCRIBING"
@@ -131,6 +133,7 @@ def abort_recording():
 
     with state_lock:
         if state != "RECORDING":
+            print(f"cannot abort recording: state is {state}")
             return False
         print("abort")
         state = "IDLE"
@@ -209,7 +212,7 @@ def main():
         os.remove(SOCK_PATH)
 
     print("loading whisper model...")
-    model = whisper.load_model(MODEL_NAME)
+    model = whisper.load_model(MODEL_NAME, device="cpu")
 
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(SOCK_PATH)
@@ -244,6 +247,7 @@ def main():
 
             elif cmd == "status":
                 status = get_status()
+                print(f"status: {status}")
                 conn.sendall(status.encode("utf-8"))
 
             else:
