@@ -104,9 +104,11 @@ class VoiceinputEngine(IBus.Engine):
         # Esc = abort
         if keyval == IBus.KEY_Escape:
             server_state = get_server_state()
-            if server_state and server_state != "IDLE":
-                self.abort()
-                return True
+            if server_state:
+                state_name = server_state.split(":")[0]
+                if state_name != "IDLE":
+                    self.abort()
+                    return True
 
         return False
 
@@ -122,15 +124,18 @@ class VoiceinputEngine(IBus.Engine):
             logging.error("failed to get server state")
             return
 
-        if server_state == "IDLE":
+        # Parse state name (may include elapsed time)
+        state_name = server_state.split(":")[0]
+
+        if state_name == "IDLE":
             self.start_recording()
 
-        elif server_state == "RECORDING":
+        elif state_name == "RECORDING":
             self.stop_recording()
 
         # TRANSCRIBING or RESULT_READY 中は無視
         else:
-            logging.debug(f"toggle ignored (server in {server_state})")
+            logging.debug(f"toggle ignored (server in {state_name})")
 
     # ------------------------------------------------
     # Whisper 制御
@@ -182,12 +187,30 @@ class VoiceinputEngine(IBus.Engine):
 
         logging.debug(f"poll: server_state={server_state}")
 
+        # Parse state (may include elapsed time for RECORDING)
+        state_parts = server_state.split(":")
+        state_name = state_parts[0]
+
+        # サーバーが RECORDING 中なら経過時間を表示
+        if state_name == "RECORDING":
+            if len(state_parts) == 3:
+                try:
+                    elapsed = float(state_parts[1])
+                    max_time = float(state_parts[2])
+                    self.update_preedit(f"🎤 音声入力中… ({int(elapsed)}s/{int(max_time)}s)")
+                except ValueError as e:
+                    logging.error(f"failed to parse recording time: {e}")
+                    self.update_preedit("🎤 音声入力中…")
+            else:
+                # Fallback for old status format or malformed data
+                self.update_preedit("🎤 音声入力中…")
+
         # サーバーが RECORDING から TRANSCRIBING に遷移したら preedit を更新
-        if server_state == "TRANSCRIBING":
+        elif state_name == "TRANSCRIBING":
             self.update_preedit("🧠 認識中…")
 
         # 結果が準備できたら取得してコミット
-        if server_state == "RESULT_READY":
+        elif state_name == "RESULT_READY":
             result = whisper_cmd("get")
 
             if result and result not in (RESULT_NONE, RESULT_ABORTED):
@@ -199,7 +222,7 @@ class VoiceinputEngine(IBus.Engine):
                 return False  # polling 終了
 
         # サーバーが IDLE に戻った場合（abort などで）
-        if server_state == "IDLE":
+        elif state_name == "IDLE":
             self.reset_state()
             return False  # polling 終了
 

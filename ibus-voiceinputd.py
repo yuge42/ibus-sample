@@ -127,13 +127,14 @@ def stop_recording():
     return True
 
 def abort_recording():
-    global state, audio_chunks
+    global state, audio_chunks, record_start_time
 
     with state_lock:
         if state != "RECORDING":
             return False
         print("abort")
         state = "IDLE"
+        record_start_time = None
 
     _stop_stream()
     audio_chunks = []
@@ -144,7 +145,7 @@ def abort_recording():
 # =========================
 
 def _transcribe_and_store():
-    global state, result_text
+    global state, result_text, record_start_time
 
     audio = _collect_audio()
 
@@ -153,6 +154,7 @@ def _transcribe_and_store():
         print("recording too short -> abort")
         with state_lock:
             state = "IDLE"
+            record_start_time = None
         return
 
     print("transcribing...")
@@ -166,13 +168,14 @@ def _transcribe_and_store():
     with state_lock:
         result_text = result["text"].strip()
         state = "RESULT_READY"
+        record_start_time = None
 
 # =========================
 # 結果取得
 # =========================
 
 def get_result():
-    global state, result_text
+    global state, result_text, record_start_time
 
     with state_lock:
         if state != "RESULT_READY":
@@ -181,6 +184,7 @@ def get_result():
         text = result_text
         result_text = None
         state = "IDLE"
+        record_start_time = None
         return text
 
 # =========================
@@ -189,6 +193,9 @@ def get_result():
 
 def get_status():
     with state_lock:
+        if state == "RECORDING" and record_start_time is not None:
+            elapsed = time.time() - record_start_time
+            return f"{state}:{elapsed:.1f}:{MAX_RECORD_SECONDS}"
         return state
 
 # =========================
